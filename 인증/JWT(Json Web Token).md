@@ -90,4 +90,35 @@ header와 payload는 base64로 인코딩만 되므로 누구나 디코딩하여 
 4. 유효기간을 짧게 하면 재로그인 시도가 잦아지고 길면 해커에게 탈취될 가능성이 큼(1번과 연관된 문제)
 ---
 ## Refresh Token
+Access Token만 사용한 인증 방식의 문제는 만일 제 3자에게 탈취당할 경우 보안이 취약하다는 것이다.  
+유효 기간이 짧은 Token의 경우, 사용자는 새로운 Token을 발급받기 위해 자주 인증을 시도해서 유효기간을 늘려야 하여 불편하다.  
+반대로 유효기간을 늘리면, 토큰을 탈취당했을 때 보안에 더 취약해지게 된다.  
+'유효기간을 짧게 하면서 보안을 챙길수는 없을까?'라는 질문에 나온 방식이 바로 **Refresh Token**이다.  
+
+Refresh Token은 Access Token과 똑같은 형태의 Jwt이다.  
+로그인이 완료됐을 때 Access Token과 동시에 발급되는 Refresh Token은 긴 유효시간을 가지면서, AccessToken의 유효기간이 만료되었을 때 새로운 Access Token을 발급해주는 열쇠가 된다.  
+(ex. Refresh Token의 유효기간은 2주, Access Token의 유효기간을 1시간으로 설정한다면 사용자에게 발급된 Access Token이 1시간이 지나게 되면 Access Token은 만료 된다. 아직 Refresh Token의 유효기간이 남아있는 동안은 계속 Access Token을 새롭게 재발급이 가능하다.)  
+Refresh Token이 만료되면 사용자는 새로 로그인  
+## Access Token + Refresh Token 인증 과정
 ![](https://t1.daumcdn.net/cfile/tistory/99DB8C475B5CA1C936)
+1. 클라이언트가 로그인을 위해 유저 정보를 서버로 전달
+2. 서버에서는 전달된 데이터로 사용자를 식별한 후, 사용자의 고유한 ID값을 부여한 후, 기타 정보와 함께 payload에 추가
+3. Jwt 토큰의 유효기간을 설정
+4. 암호화할 SECRET KET를 이용해 Access Token, **Refresh Token**을 발급
+    - 이때 일반적으로 회원 DB에 Refresh Token을 저장
+5. 사용자는 Refresh Token을 안전한 저장소에 저장
+6. 사용자는 Access Token을 받아 저장(쿠키)한 후, 인증이 필요한 요청마다 토큰을 헤더에 추가하여 전달
+7. Access Token을 검증하여 이에 맞는 데이터를 전송
+8. 시간이 지나서 Access Token이 만료됨
+9. 사용자는 6번과 마찬가지로 헤더에 토큰을 추가하여 전달
+10. 서버는 Access Token이 만료된 것을 확인
+11. 사용자에게 만료 메시지를 반환
+    - 사용자는 Access Token의 payload를 통해 유효기간을 알 수 있으므로 요청 이전에 바로 재발급 요청을 할 수 있음
+12. 사용자는 Refresh Token과 Access Token을 헤더에 담아 서버에 요청
+13. 서버는 요청받은 토큰의 Verify Signature를 SECRET KEY로 복호화한 후, 조작 여부, 유효기간을 확인하고 전달받은 Refresh Token과 저장해둔 Refresh Token을 비교, Token이 동일하고 유효기간이 지나지 않았다면 Access Token을 발급
+14. 새로 발급받은 Access Token을 저장하여 인증이 필요한 요청마다 헤더에 추가하여 전달
+## 장점
+- Access Token만 있을 때보다 안전
+## 단점
+- 구현이 복잡
+- Access Token이 만료될 때마다 새롭게 발급하는 과정에서 HTTP 요청이 잦아짐
