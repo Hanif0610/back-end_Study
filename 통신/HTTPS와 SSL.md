@@ -95,4 +95,5 @@
     - 정보를 상대방에게 전송하기 전에 session key 값을 이용해서 대칭키 방식으로 암호화하고, 암호화된 정보는 상대방에게 전송될 것이고, 상대방도 세션키 값을 알고 있기 때문에 암호를 복호화할 수 있다.
 3. 세션종료
     - 데이터의 전송이 끝나면 SSL 통신이 끝났음을 서로에게 알려준다. 이 때 통신에서 사용한 대칭키인 세션키를 폐기한다.
-![](https://t1.daumcdn.net/cfile/tistory/990B63335BC96D3020)
+    
+![](https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=http%3A%2F%2Fcfile29.uf.tistory.com%2Fimage%2F990B63335BC96D30206CBE)
